@@ -65,7 +65,7 @@ def get_weather_data(latitude, longitude):
 
 
 def get_forecast_data(latitude, longitude):
-    forecast_url = f"http://api.openweathermap.org/data/2.5/forecast?lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
+    forecast_url = f"{OPENWEATHER_BASE_URL}lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
     forecast_data = requests.get(forecast_url)
     return forecast_data.json()
 
