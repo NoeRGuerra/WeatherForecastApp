@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <title>Weather Forecast for {{ city }}</title>
+</head>
+
+<body>
+  <h1>{{ city }}</h1>
+  <p id="description">{{ description }}</p>
+  <div id="main-temp">
+    <img src="{{ icon_url }}" />
+    <p>{{ temperature }}°C</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th colspan="3">5-day Forecast</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for date in weather_by_date %}
+      <tr>
+        <td class="forecast-days">{{ date.strftime("%A") }}</td>
+        <td class="forecast-icons"><img
+            src="{{ url_for('static', filename='icons/' + weather_by_date[date]['icon'] + '.svg') }}"
+            class="forecast-icon"></td>
+        <td class="forecast-temps">{{ weather_by_date[date]['max_temp'] }}°C / {{ weather_by_date[date]['min_temp'] }}°C
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+
+</html>

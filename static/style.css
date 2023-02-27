@@ -1,0 +1,53 @@
+body{
+    background-image: linear-gradient(to right,rgb(104, 176, 218), rgb(0, 60, 151));
+    color:white; /* Make all text white */
+    font-family: sans-serif; /* Change all fonts to sans-serif */
+}
+
+#main-temp{
+    display: flex;
+    font-size: 96px;
+    justify-content: center;
+    align-items: center
+}
+
+img{
+    width: 2em;
+}
+
+h1, h2, h3, h4, h5, h6, #description{
+    text-align: center; /* Center headers and weather description */
+}
+
+/* Set table width to 100% and remove cell borders */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Add padding, center text and align content vertically for table headers and data cells */
+td{
+    padding: 10px;
+    text-align: center;
+    vertical-align: top;
+    /* Set a semi-transparent black background color and add margin between cells */
+    background-color: rgba(0,0,0,0.4);
+}
+
+/* Increase header size, add a darker background and round the corners */
+th{
+    font-size: 1.5em;
+    background-color: rgba(0,0,0,0.5);
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+}
+
+/* Align day labels to the right */
+.forecast-days {
+    text-align: right;
+}
+
+/* Align temperature data to the left */
+.forecast-temps {
+    text-align: left;
+}

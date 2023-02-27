@@ -1,0 +1,5 @@
+/.vscode
+/config.py
+/notebook
+/venv
+/__pycache__
