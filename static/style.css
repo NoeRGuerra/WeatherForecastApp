@@ -51,3 +51,13 @@ th{
 .forecast-temps {
     text-align: left;
 }
+
+#alternate{
+    font-size: 0.2em;
+    vertical-align: top;
+}
+
+#alternate:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}

@@ -1,13 +1,19 @@
+from typing import Tuple, Union
 from flask import Flask, render_template, url_for
 import requests
 import config
 import datetime
+
+## TODO:
+## - Add double click on city's name to change city or zip code
+## - Call geolocations API to try to get user's location
 
 app = Flask(__name__)
 OPENWEATHER_API_KEY = config.OPENWEATHER_API_KEY
 ZIP_API_KEY = config.ZIP_API_KEY
 ZIP_BASE_URL = "https://thezipcodes.com/api/v1/search?"
 OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
+OPENWEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast?"
 
 icon_filenames = {"01d": "clear",
                   "01n": "nt_clear",
@@ -112,7 +118,7 @@ def get_forecast_data(latitude : float, longitude : float) -> dict:
     :return: A dictionary containing forecast data for the specified location.
     :raises: Exception: If the request to the OpenWeatherMap API fails or if the latitude or longitude are invalid.
     """
-    forecast_url = f"{OPENWEATHER_BASE_URL}lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
+    forecast_url = f"{OPENWEATHER_FORECAST_URL}lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
     forecast_data = requests.get(forecast_url)
     return forecast_data.json()
 

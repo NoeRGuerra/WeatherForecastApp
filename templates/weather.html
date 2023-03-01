@@ -14,7 +14,7 @@
   <p id="description">{{ description }}</p>
   <div id="main-temp">
     <img src="{{ icon_url }}" />
-    <p>{{ temperature }}°C</p>
+    <p>{{ temperature }}°C <span id="alternate">|°F</span></p>
   </div>
   <table>
     <thead>
@@ -35,6 +35,7 @@
       {% endfor %}
     </tbody>
   </table>
+  <script type="text/javascript" src="{{ url_for('static', filename='scripts.js')}}"></script>
 </body>
 
 </html>
