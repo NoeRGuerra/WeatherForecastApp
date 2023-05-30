@@ -1,17 +1,12 @@
 from typing import Tuple, Union
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request, redirect
 import requests
 import config
 import datetime
-
-## TODO:
-## - Add double click on city's name to change city or zip code
-## - Call geolocations API to try to get user's location
+import pycountry
 
 app = Flask(__name__)
 OPENWEATHER_API_KEY = config.OPENWEATHER_API_KEY
-ZIP_API_KEY = config.ZIP_API_KEY
-ZIP_BASE_URL = "https://thezipcodes.com/api/v1/search?"
 OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
 OPENWEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast?"
 
@@ -35,8 +30,16 @@ icon_filenames = {"01d": "clear",
                   "50n": "fog", }
 
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def home():
+    country_codes = {}
+    for country in pycountry.countries:
+        country_codes[country.alpha_2] = country.name
+    return render_template('zipcode.html', country_codes=sorted(country_codes.items(), key=lambda x: x[1]))
+
+
+@app.route("/weather/lat=<lat>&lon=<lon>", methods=['GET', 'POST'])
+def weather(lat, lon):
     """
     Returns the current weather information and a five-day forecast for a specified zip code and country code.
 
@@ -48,11 +51,7 @@ def home():
 
     :raises: Exception: If the zip code or country code is invalid or cannot be found in the OpenWeatherMap database.
     """
-    zip_code = 28027
-    country_code = "US"
-    latitude, longitude = get_coordinates(zip_code, country_code)
-
-    weather_data = get_weather_data(latitude, longitude)
+    weather_data = get_weather_data(lat, lon)
     temperature = round(weather_data['main']['temp'])
     description = weather_data['weather'][0]['description'].capitalize()
 
@@ -60,7 +59,7 @@ def home():
     icon = weather_data['weather'][0]['icon']
     icon_url = url_for('static', filename=f'icons/{icon_filenames[icon]}.svg')
 
-    forecast_data = get_forecast_data(latitude, longitude)
+    forecast_data = get_forecast_data(lat, lon)
     weather_by_date = get_max_min_temp(forecast_data)
 
     return render_template('weather.html', temperature=temperature, description=description, city=city, icon_url=icon_url, weather_by_date=weather_by_date)
@@ -68,26 +67,37 @@ def home():
 
 def get_coordinates(zip_code: Union[int, str], country_code: str) -> Tuple[float, float]:
     """
-    Retrieves the latitude and longitude coordinates for a given zip code and country code using the TheZipCodes.com API.
+    Retrieves the latitude and longitude coordinates for a given zip code and country code using the OpenStreetMap API.
 
-    The function constructs a URL using the provided zip code and country code, and sends a GET request to the TheZipCodes.com API 
+    The function constructs a URL using the provided zip code and country code, and sends a GET request to the OpenStreetMap API 
     to retrieve the corresponding latitude and longitude coordinates. The coordinates are then returned as a tuple.
 
     :param zip_code: A string or integer representing the zip code to retrieve coordinates for.
     :param country_code: A string representing the country code to retrieve coordinates for.
     :return: A tuple containing the latitude and longitude coordinates corresponding to the provided zip code and country code.
 
-    :raises: Exception: If the zip code or country code is invalid or cannot be found in the TheZipCodes.com database.
+    :raises: Exception: If the zip code or country code is invalid or cannot be found in the OpenStreetMap database.
     """
-    URL = f"{ZIP_BASE_URL}zipCode={zip_code}&countryCode={country_code}&apiKey={ZIP_API_KEY}"
-    response = requests.get(URL)
+    base_url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        "format": "json",
+        "postalcode": zip_code,
+        "countrycodes": country_code,
+        "limit": 1
+    }
+    response = requests.get(base_url, params=params)
     response_json = response.json()
-    latitude = response_json['location'][0]['latitude']
-    longitude = response_json['location'][0]['longitude']
-    return latitude, longitude
+
+    if response.status_code == 200 and response_json:
+        latitude = float(response_json[0]['lat'])
+        longitude = float(response_json[0]['lon'])
+        return latitude, longitude
+    else:
+        raise Exception(
+            "Failed to retrieve coordinates from OpenStreetMap API.")
 
 
-def get_weather_data(latitude : float, longitude : float) -> dict:
+def get_weather_data(latitude: float, longitude: float) -> dict:
     """
     Retrieve weather data from the OpenWeatherMap API for a given latitude and longitude.
 
@@ -105,7 +115,7 @@ def get_weather_data(latitude : float, longitude : float) -> dict:
     return response.json()
 
 
-def get_forecast_data(latitude : float, longitude : float) -> dict:
+def get_forecast_data(latitude: float, longitude: float) -> dict:
     """
     Retrieve weather forecast data from the OpenWeatherMap API for a given latitude and longitude.
 
@@ -123,7 +133,7 @@ def get_forecast_data(latitude : float, longitude : float) -> dict:
     return forecast_data.json()
 
 
-def get_max_min_temp(forecast_data : dict) -> dict:
+def get_max_min_temp(forecast_data: dict) -> dict:
     """
     Calculate the maximum and minimum temperature for each day from the provided forecast data.
 
