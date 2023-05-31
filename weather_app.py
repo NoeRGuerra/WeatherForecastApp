@@ -1,5 +1,4 @@
-from typing import Tuple, Union
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for
 import requests
 import config
 import datetime
@@ -63,38 +62,6 @@ def weather(lat, lon):
     weather_by_date = get_max_min_temp(forecast_data)
 
     return render_template('weather.html', temperature=temperature, description=description, city=city, icon_url=icon_url, weather_by_date=weather_by_date)
-
-
-def get_coordinates(zip_code: Union[int, str], country_code: str) -> Tuple[float, float]:
-    """
-    Retrieves the latitude and longitude coordinates for a given zip code and country code using the OpenStreetMap API.
-
-    The function constructs a URL using the provided zip code and country code, and sends a GET request to the OpenStreetMap API 
-    to retrieve the corresponding latitude and longitude coordinates. The coordinates are then returned as a tuple.
-
-    :param zip_code: A string or integer representing the zip code to retrieve coordinates for.
-    :param country_code: A string representing the country code to retrieve coordinates for.
-    :return: A tuple containing the latitude and longitude coordinates corresponding to the provided zip code and country code.
-
-    :raises: Exception: If the zip code or country code is invalid or cannot be found in the OpenStreetMap database.
-    """
-    base_url = "https://nominatim.openstreetmap.org/search"
-    params = {
-        "format": "json",
-        "postalcode": zip_code,
-        "countrycodes": country_code,
-        "limit": 1
-    }
-    response = requests.get(base_url, params=params)
-    response_json = response.json()
-
-    if response.status_code == 200 and response_json:
-        latitude = float(response_json[0]['lat'])
-        longitude = float(response_json[0]['lon'])
-        return latitude, longitude
-    else:
-        raise Exception(
-            "Failed to retrieve coordinates from OpenStreetMap API.")
 
 
 def get_weather_data(latitude: float, longitude: float) -> dict:
