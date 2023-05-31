@@ -1,0 +1,98 @@
+body{
+    justify-content: center;
+}
+
+.flag-option {
+    display: flex;
+    align-items: center;
+}
+
+.flag-option .fi {
+    margin-right: 5px;
+}
+
+.error-message {
+    color: rgb(255, 230, 0);
+}
+
+.form-group {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    /* background-color: #0d4376; */
+}
+
+.form-group input::placeholder {
+    color: white;
+}
+
+input[type=text] {
+    border: none;
+    background: none;
+    border-bottom: 1px solid rgb(255, 255, 255);
+    font-size: 2em;
+    margin-right: 10px;
+    padding: 5px;
+    color: white;
+}
+
+input:focus {
+    outline: none;
+}
+
+input::placeholder {
+    color: white;
+}
+
+#submit_button {
+    background-color: #072a52;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3em;
+    margin-top: 10px;
+    border-radius: 20px;
+    padding: 5px;
+}
+
+#submit_button:hover {
+    color: #7bbbff;
+}
+
+#submit_button:disabled{
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#zip-title {
+    margin-top: 0;
+}
+
+.select2-container .select2-results__option {
+    color: white;
+    background-color: #245d9e;
+}
+
+.select2-container {
+    font-size: 1em;
+    width: 300px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    background-color: #2868b1;
+    color: white !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: white !important;
+}
+
+.img-flag {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+#loading_spinner {
+    display: none; /* Initially hide the loading spinner */
+    /* Add styles for the loading spinner, such as size, color, animation, etc. */
+}

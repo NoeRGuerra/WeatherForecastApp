@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/zipcode.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css">
+
+    <title>Enter ZIP Code</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+
+<body>
+    <form action="/" method="POST">
+        <input id="zip_code_input" type="text" name="zipcode" placeholder="ZIP Code" oninput="validateZipCode()">
+        <select id="country_list" name="country_code">
+            <option value=""></option> <!-- Empty option -->
+            {% for code, country in country_codes %}
+            <option value="{{ code }}">{{ country }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" id="submit_button">Submit</button>
+        <div id="error_message" class="error-message"></div>
+        <div id="loading_spinner" class="spinner"></div>
+    </form>
+
+
+    <script src="{{ url_for('static', filename='js/location.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flags.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/formValidation.js') }}"></script>
+</body>
+
+</html>
