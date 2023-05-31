@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <title>Weather Forecast for {{ city }}</title>
 </head>
 
@@ -14,7 +14,7 @@
   <p id="description">{{ description }}</p>
   <div id="main-temp">
     <img src="{{ icon_url }}" />
-    <p>{{ temperature }}°C <span id="alternate">|°F</span></p>
+    <p>{{ temperature }}°C<span id="alternate">|°F</span></p>
   </div>
   <table>
     <thead>
@@ -35,7 +35,7 @@
       {% endfor %}
     </tbody>
   </table>
-  <script type="text/javascript" src="{{ url_for('static', filename='scripts.js')}}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/scripts.js')}}"></script>
 </body>
 
 </html>
