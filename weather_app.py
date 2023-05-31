@@ -30,7 +30,7 @@ icon_filenames = {"01d": "clear",
                   "50n": "fog", }
 
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/")
 def home():
     country_codes = {}
     for country in pycountry.countries:
@@ -38,7 +38,7 @@ def home():
     return render_template('zipcode.html', country_codes=sorted(country_codes.items(), key=lambda x: x[1]))
 
 
-@app.route("/weather/lat=<lat>&lon=<lon>", methods=['GET', 'POST'])
+@app.route("/weather/lat=<lat>&lon=<lon>")
 def weather(lat, lon):
     """
     Returns the current weather information and a five-day forecast for a specified zip code and country code.
