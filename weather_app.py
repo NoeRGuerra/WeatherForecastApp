@@ -36,8 +36,7 @@ def home():
         country_codes[country.alpha_2] = country.name
     return render_template('zipcode.html', country_codes=sorted(country_codes.items(), key=lambda x: x[1]))
 
-
-@app.route("/weather/lat=<lat>&lon=<lon>")
+@app.route("/weather/lat=<float(signed=True):lat>&lon=<float(signed=True):lon>")
 def weather(lat, lon):
     """
     Returns the current weather information and a five-day forecast for a specified zip code and country code.
@@ -50,6 +49,12 @@ def weather(lat, lon):
 
     :raises: Exception: If the zip code or country code is invalid or cannot be found in the OpenWeatherMap database.
     """
+    try:
+        if not validate_coordinates(lat, lon):
+            raise ValueError
+    except ValueError:
+        return render_template('error.html', error_message='An error occurred while retrieving weather data')
+
     weather_data = get_weather_data(lat, lon)
     temperature = round(weather_data['main']['temp'])
     description = weather_data['weather'][0]['description'].capitalize()
@@ -77,9 +82,18 @@ def get_weather_data(latitude: float, longitude: float) -> dict:
     :return: A dictionary containing weather data for the specified location.
     :raises: Exception: If the request to the OpenWeatherMap API fails or if the latitude or longitude are invalid.
     """
+    if not validate_coordinates(latitude, longitude):
+        raise ValueError('Invalid latitude or longitude values.')
+
     URL = f"{OPENWEATHER_BASE_URL}lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
     response = requests.get(URL)
-    return response.json()
+    response.raise_for_status()  # Raise an exception for non-2xx status codes
+    data = response.json()
+    
+    if 'cod' in data and int(data['cod']) != 200:
+        # Handle specific API error response
+        raise Exception("Error: " + data['message'])
+    return data
 
 
 def get_forecast_data(latitude: float, longitude: float) -> dict:
@@ -95,9 +109,18 @@ def get_forecast_data(latitude: float, longitude: float) -> dict:
     :return: A dictionary containing forecast data for the specified location.
     :raises: Exception: If the request to the OpenWeatherMap API fails or if the latitude or longitude are invalid.
     """
+    if not validate_coordinates(latitude, longitude):
+        raise ValueError('Invalid latitude or longitude values.')
+
     forecast_url = f"{OPENWEATHER_FORECAST_URL}lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
-    forecast_data = requests.get(forecast_url)
-    return forecast_data.json()
+    response = requests.get(forecast_url)
+    response.raise_for_status()  # Raise an exception for non-2xx status codes
+    data = response.json()
+    
+    if 'cod' in data and int(data['cod']) != 200:
+        # Handle specific API error response
+        raise Exception(f'Error: {data["message"]}')
+    return data
 
 
 def get_max_min_temp(forecast_data: dict) -> dict:
@@ -109,6 +132,17 @@ def get_max_min_temp(forecast_data: dict) -> dict:
     :return: A dictionary with the maximum and minimum temperature and the corresponding weather icon for each day.
     :rtype: dict
     """
+    def most_common_icon(icons):
+        items = {}
+        for item in icons:
+            if item in items:
+                items[item] += 1
+            else:
+                items[item] = 1
+        # Return the sorted items with a daytime icon as first item if possible
+        sorted_items = sorted(items.items(), key=lambda item: (item[0][-1] != 'd', -item[1])) 
+        return sorted_items[0][0]
+        
     temp_by_date = {}
     for item in forecast_data['list']:
         dt = datetime.datetime.fromtimestamp(item['dt'])
@@ -123,12 +157,19 @@ def get_max_min_temp(forecast_data: dict) -> dict:
     for date, temps_icons in temp_by_date.items():
         max_temp = round(max(temps_icons['temps']))
         min_temp = round(min(temps_icons['temps']))
-        icon = temps_icons['icons'][0]
+        icon = most_common_icon(temps_icons['icons'])
         icon = icon_filenames[icon]
         temp_by_date[date] = {'max_temp': max_temp,
                               'min_temp': min_temp, 'icon': icon}
     return temp_by_date
 
+
+def validate_coordinates(latitude: float, longitude: float) -> None:
+    if not isinstance(latitude, (int, float)) or not isinstance(longitude, (int, float)):
+        raise TypeError(f"Expected 'latitude' and 'longitude' to be a number, but received '{type(latitude).__name__}' for latitude and '{type(longitude).__name__}' for longitude.")
+    if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+        return False
+    return True
 
 if __name__ == "__main__":
     app.run(debug=True)
