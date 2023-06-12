@@ -1,11 +1,12 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, redirect, request
 import requests
 import config
 import datetime
 import pycountry
+from pathlib import Path
+from dotenv import dotenv_values
 
 app = Flask(__name__)
-OPENWEATHER_API_KEY = config.OPENWEATHER_API_KEY
 OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
 OPENWEATHER_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast?"
 
@@ -29,12 +30,29 @@ icon_filenames = {"01d": "clear",
                   "50n": "fog", }
 
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def home():
+    if request.method == 'POST':
+        api_key = request.form['api_key']
+        create_env_file(api_key)
+    
+    api_key = read_api_key()
+    if not api_key:
+        return redirect('/get_api_key')
+    
     country_codes = {}
     for country in pycountry.countries:
         country_codes[country.alpha_2] = country.name
     return render_template('zipcode.html', country_codes=sorted(country_codes.items(), key=lambda x: x[1]))
+
+@app.route("/get_api_key")
+def validate_api_key():
+    filepath = Path(__file__).parent / '.env'
+    if filepath.exists():
+        env_vars = dotenv_values(filepath)
+        if 'OPENWEATHER_API_KEY' in env_vars:
+            return redirect('/')
+    return render_template('index.html')
 
 @app.route("/weather/lat=<float(signed=True):lat>&lon=<float(signed=True):lon>")
 def weather(lat, lon):
@@ -85,6 +103,7 @@ def get_weather_data(latitude: float, longitude: float) -> dict:
     if not validate_coordinates(latitude, longitude):
         raise ValueError('Invalid latitude or longitude values.')
 
+    OPENWEATHER_API_KEY = read_api_key()
     URL = f"{OPENWEATHER_BASE_URL}lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
     response = requests.get(URL)
     response.raise_for_status()  # Raise an exception for non-2xx status codes
@@ -112,6 +131,7 @@ def get_forecast_data(latitude: float, longitude: float) -> dict:
     if not validate_coordinates(latitude, longitude):
         raise ValueError('Invalid latitude or longitude values.')
 
+    OPENWEATHER_API_KEY = read_api_key()
     forecast_url = f"{OPENWEATHER_FORECAST_URL}lat={latitude}&lon={longitude}&appid={OPENWEATHER_API_KEY}&units=metric"
     response = requests.get(forecast_url)
     response.raise_for_status()  # Raise an exception for non-2xx status codes
@@ -170,6 +190,15 @@ def validate_coordinates(latitude: float, longitude: float) -> None:
     if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
         return False
     return True
+
+def create_env_file(api_key):
+    with open('.env', 'w') as f:
+        f.write(f'OPENWEATHER_API_KEY={api_key}\n')
+
+def read_api_key():
+    env_vars = dotenv_values('.env')
+    api_key = env_vars.get('OPENWEATHER_API_KEY')
+    return api_key
 
 if __name__ == "__main__":
     app.run(debug=True)
