@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Enter API Key</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/zipcode.css') }}">
+</head>
+
+<body>
+  <h2>Please enter your API Key</h2>
+  <form action="/" method="POST" id="api_form">
+    <p style="text-align: center;">An API Key from OpenWeatherMap is needed to proceed.</p>
+    <input id="api_key_input" type="text" name="api_key" placeholder="API Key" oninput="validateApiLength()">
+    <button type="submit" name="submit_button" id="submit_button">Submit</button>
+    <div id="error_message" class="error-message"></div>
+    <script src="{{ url_for('static', filename='js/validateApiKey.js') }}"></script>
+  </form>
+</body>
+
+</html>
