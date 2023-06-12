@@ -1,6 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
 import requests
-import config
 import datetime
 import pycountry
 from pathlib import Path
