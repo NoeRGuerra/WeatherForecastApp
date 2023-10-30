@@ -16,7 +16,7 @@
 </head>
 
 <body>
-    <form action="/" method="POST">
+    <form action="{{ url_for('home') }}" method="POST">
         <input id="zip_code_input" type="text" name="zipcode" placeholder="ZIP Code" oninput="validateZipCode()">
         <select id="country_list" name="country_code">
             <option value=""></option> <!-- Empty option -->
@@ -29,7 +29,9 @@
         <div id="loading_spinner" class="spinner"></div>
     </form>
 
-
+    <script type="text/javascript">
+        var APP_PATH = "{{ url_for('home', _external=True) }}"
+    </script>
     <script src="{{ url_for('static', filename='js/location.js') }}"></script>
     <script src="{{ url_for('static', filename='js/flags.js') }}"></script>
     <script src="{{ url_for('static', filename='js/formValidation.js') }}"></script>

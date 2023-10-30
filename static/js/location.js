@@ -1,7 +1,7 @@
 function showLocation(position) {
   const lat = position.coords.latitude;
   const lon = position.coords.longitude;
-  const pageUrl = `/weather/lat=${lat}&lon=${lon}`;
+  const pageUrl = `${APP_PATH}/weather/lat=${lat}&lon=${lon}`;
   window.location.href = pageUrl;
 }
 
