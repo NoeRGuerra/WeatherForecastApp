@@ -1,8 +1,11 @@
 from flask import Flask, render_template, url_for, redirect, request, session
+import logging
 import os
 import requests
 import datetime
 import pycountry
+
+logging.basicConfig(filename='app.log', level=logging.INFO)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY')
@@ -34,9 +37,11 @@ def home():
     if request.method == 'POST':
         api_key = request.form['api_key']
         session['OPENWEATHER_API_KEY'] = api_key
+        logging.info(f'API key set: {api_key}')
     
     api_key = session.get('OPENWEATHER_API_KEY')
     if not api_key:
+        logging.warning(f'API key not found in session')
         return redirect(url_for('validate_api_key'))
     
     country_codes = {}
@@ -48,7 +53,9 @@ def home():
 def validate_api_key():
     api_key = session.get('OPENWEATHER_API_KEY')
     if api_key:
+        logging.info('API key found in session, redirecting to home')
         return redirect(url_for('home'))
+    logging.warning('API key not found in session, rendering index.html')
     return render_template('index.html')
 
 @app.route("/weather/lat=<float(signed=True):lat>&lon=<float(signed=True):lon>")
@@ -68,6 +75,7 @@ def weather(lat, lon):
         if not validate_coordinates(lat, lon):
             raise ValueError
     except ValueError:
+        logging.error('An error occurred while retrieving weather data')
         return render_template('error.html', error_message='An error occurred while retrieving weather data')
 
     weather_data = get_weather_data(lat, lon)
@@ -80,6 +88,8 @@ def weather(lat, lon):
 
     forecast_data = get_forecast_data(lat, lon)
     weather_by_date = get_max_min_temp(forecast_data)
+
+    logging.info(f'Retrieved weather data for {city}: {temperature} degrees, {description}')
 
     return render_template('weather.html', temperature=temperature, description=description, city=city, icon_url=icon_url, weather_by_date=weather_by_date)
 
@@ -98,6 +108,7 @@ def get_weather_data(latitude: float, longitude: float) -> dict:
     :raises: Exception: If the request to the OpenWeatherMap API fails or if the latitude or longitude are invalid.
     """
     if not validate_coordinates(latitude, longitude):
+        logging.error('Invalid latitude or longitude values.')
         raise ValueError('Invalid latitude or longitude values.')
 
     OPENWEATHER_API_KEY = session.get('OPENWEATHER_API_KEY')
@@ -107,8 +118,10 @@ def get_weather_data(latitude: float, longitude: float) -> dict:
     data = response.json()
     
     if 'cod' in data and int(data['cod']) != 200:
+        logging.error(f"Error retrieving weather data: {data['message']}")
         # Handle specific API error response
         raise Exception("Error: " + data['message'])
+    logging.info(f'Successfully retrieved weather data for latitude {latitude} and longitude {longitude}')
     return data
 
 
@@ -126,6 +139,7 @@ def get_forecast_data(latitude: float, longitude: float) -> dict:
     :raises: Exception: If the request to the OpenWeatherMap API fails or if the latitude or longitude are invalid.
     """
     if not validate_coordinates(latitude, longitude):
+        logging.error('Invalid latitude or longitude values.')
         raise ValueError('Invalid latitude or longitude values.')
 
     OPENWEATHER_API_KEY = session.get('OPENWEATHER_API_KEY')
@@ -135,8 +149,10 @@ def get_forecast_data(latitude: float, longitude: float) -> dict:
     data = response.json()
     
     if 'cod' in data and int(data['cod']) != 200:
+        logging.error(f"Error retrieving forecast data: {data['message']}")
         # Handle specific API error response
         raise Exception(f'Error: {data["message"]}')
+    logging.info(f'Successfully retrieved forecast data for latitude {latitude} and longitude {longitude}')
     return data
 
 
@@ -178,14 +194,19 @@ def get_max_min_temp(forecast_data: dict) -> dict:
         icon = icon_filenames[icon]
         temp_by_date[date] = {'max_temp': max_temp,
                               'min_temp': min_temp, 'icon': icon}
+    logging.info(f'Calculated max and min temperatures for {len(temp_by_date)} days')
     return temp_by_date
 
 
 def validate_coordinates(latitude: float, longitude: float) -> None:
     if not isinstance(latitude, (int, float)) or not isinstance(longitude, (int, float)):
+        logging.error(f"Expected 'latitude' and 'longitude' to be a number, but received '{type(latitude).__name__}' for latitude and '{type(longitude).__name__}' for longitude.")
         raise TypeError(f"Expected 'latitude' and 'longitude' to be a number, but received '{type(latitude).__name__}' for latitude and '{type(longitude).__name__}' for longitude.")
+    
     if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+        logging.error(f'Invalid latitude or longitude values: {latitude}, {longitude}')
         return False
+    logging.info(f'Validated coordinates: {latitude}, {longitude}')
     return True
 
 if __name__ == "__main__":
