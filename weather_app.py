@@ -50,7 +50,7 @@ def validate_api_key():
     if filepath.exists():
         env_vars = dotenv_values(filepath)
         if 'OPENWEATHER_API_KEY' in env_vars:
-            return redirect(url_for('/'))
+            return redirect(url_for('home'))
     return render_template('index.html')
 
 @app.route("/weather/lat=<float(signed=True):lat>&lon=<float(signed=True):lon>")
