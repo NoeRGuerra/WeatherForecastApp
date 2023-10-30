@@ -37,7 +37,7 @@ def home():
     
     api_key = read_api_key()
     if not api_key:
-        return redirect('/get_api_key')
+        return redirect(url_for('validate_api_key'))
     
     country_codes = {}
     for country in pycountry.countries:
@@ -50,7 +50,7 @@ def validate_api_key():
     if filepath.exists():
         env_vars = dotenv_values(filepath)
         if 'OPENWEATHER_API_KEY' in env_vars:
-            return redirect('/')
+            return redirect(url_for('/'))
     return render_template('index.html')
 
 @app.route("/weather/lat=<float(signed=True):lat>&lon=<float(signed=True):lon>")
