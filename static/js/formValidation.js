@@ -16,7 +16,7 @@ function validateForm(event) {
 }
 
 function createTargetUrl(latitude, longitude) {
-    const pageUrl = `/weather/lat=${latitude}&lon=${longitude}`;
+    const pageUrl = `${APP_PATH}/weather/lat=${latitude}&lon=${longitude}`;
     window.location.href = pageUrl;
 }
 
